@@ -39,7 +39,8 @@ CREATE TABLE IF NOT EXISTS `users` (
 
 INSERT INTO `users` (`userid`, `user`, `password`) VALUES
 (1, 'admin@admin.com', '7110eda4d09e062aa5e4a390b0a572ac0d2c0220'),
-(2, 'user@user.com', '7110eda4d09e062aa5e4a390b0a572ac0d2c0220');
+(2, 'user@user.com', '7110eda4d09e062aa5e4a390b0a572ac0d2c0220'),
+(3, 'marcos.martines@alumnos.udg.mx', 'secreta');
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;

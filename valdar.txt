@@ -1,0 +1,91 @@
+<?php
+//Posteriormente ya que revisamos que no hay nadie "logeado", revisamos si hubo un
+//intento de iniciar sesión, si hubo un "submit" 
+if( isset( $_POST['user'] ) && isset( $_POST['password'] ) )
+{
+    //usuario y password de la DB
+    $server = 'localhost';
+    $dbuser ='root';
+    $dbpassword ='';
+
+    //primero realizamos la conexión usando esta funcion
+    $db = mysqli_connect($server, $dbuser, $dbpassword);
+    if( $db )
+    {
+        //si la conexión se realiza correctamente procedemos a iniciar sesión
+        switch( $_POST['token'] ){
+            case 1:
+                //login( $db, $_POST['user'], $_POST['password'] );
+                //$user = mysql_real_escape_string($usr); //usamos un string absoluto para evitar sqlinjection
+                $user = $_POST['user'];
+                $password = sha1( $_POST['password'] ); //encriptamos el password
+                $query ="SELECT user FROM users WHERE user='{ $user }' AND password='{ $password }'";
+                try {
+                    //$db->beginTransaction(); //usando mysqli()
+                    $result = $db->query($query);
+                    if( $result ){
+                        $row = $result->fetch_all();
+                        dd($row);
+                    }
+                //Establecemos información de sesión
+                $_SESSION['user'] = $row['user'];
+                //$db->commit(); //termina la consulta con la DB
+                //$db->close();
+                //En este momento ya hemos validado el login de usuario, por lo que redirigimos a la página de bienvenido
+                redirect("bienvenido.php");
+                } catch ( mysqli_sql_exception $e ) {
+                    //$db->rollBack();
+                    echo "<p>Ha ocurrido un error en el inicio de sesión.</p>";
+                    //die();//termino del script
+                }
+                break;
+            case 2:
+                //register($db);
+                $user = mysql_real_escape_string($_POST['user']); //usamos un string absoluto para evitar sqlinjection
+                $password = sha1($_POST['password']); //encriptamos el password
+                $rpassword = sha1($_POST['rpassword']); //encriptamos la confirmación del password
+
+                //Ahora validamos, si la validación es correcta procedemos a ejecutar la inserción en la DB
+                if( validateInputs($user,$password,$rpassword) )
+                {
+                    //ya hemos validado los inputs, ahora comprobemos que el usuario este libre
+                    if(!validateUsername($db, $user))
+                    {
+                    //ahora creamos nuestra query
+                    $query = "INSERT INTO users(user,password) values('{$user}','{$password}')";
+                    try {  
+                        //$db->beginTransaction();//iniciamos transacción DBO
+                        $db->query($query); //ejecutamos la inserción de datos y el registro
+                        //$db->commit();//terminamos la conexión exitosamente
+                        echo "Registro completado\n su usuario:{$user} y su password:{$_POST['password']}".
+                              "\n Entre <a href=\"bienvenido.php\">Aqui</a> para ir a la pagina de bienvenida";
+                      } catch ( mysqli_sql_exception $e ) {
+                        //$db->rollBack(); //Si falla la conexión, tiramos la conexión
+                        echo "<p>Ocurrio un error, el registro no pudo ser completado</p>";
+                      }            
+                    }else{
+                        echo "<p>El nombre de usuario ya existe, por lo que no se pudo completar el registro.</p>";
+                    }
+
+                }
+                else //de lo contrario cancelamos el proceso
+                {
+                    echo "<p>Los datos de registro son invalidos, intente de nuevo.</p>";
+                    $db = null;
+                    die();
+                }    
+                break;
+            default:
+        }
+        $db->close();
+    }
+    else
+    {
+        //echo $db;
+        echo "<p>No se pudo establecer la conexión</p>";
+        echo mysqli_connect_error();
+    }    
+}
+//En caso de que no se haya colocado data desde la forma 
+//no hacemos nada y esperamos a que se suba la data
+?>
